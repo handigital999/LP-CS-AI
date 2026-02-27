@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReplyAI — CS WhatsApp Otomatis 24/7 dengan AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0e14;
+  --surface: #13151f;
+  --card: #181a26;
+  --border: #232638;
+  --border-soft: #1e2030;
+  --white: #ffffff;
+  --off: #f0f0f6;
+  --ink: #e8eaf6;
+  --muted: #7b7f9e;
+  --dim: #4a4d6a;
+  --blue: #4f8ef7;
+  --blue-soft: #1a2a4a;
+  --purple: #8b5cf6;
+  --purple-soft: #1e1535;
+  --wa: #25D366;
+  --wa-dark: #128C7E;
+  --wa-soft: #0d2218;
+  --green: #22c55e;
+  --green-soft: #0d2018;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --glow-blue: 0 0 40px rgba(79,142,247,0.15);
+  --glow-wa: 0 0 40px rgba(37,211,102,0.2);
+  --shadow: 0 2px 8px rgba(0,0,0,0.3), 0 8px 32px rgba(0,0,0,0.2);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* noise texture overlay */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.4;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  background: linear-gradient(90deg, var(--purple), var(--blue));
+  color: white;
+  text-align: center;
+  padding: 10px 20px;
+  font-size: 13px; font-weight: 600;
+  position: relative; z-index: 10;
+  letter-spacing: 0.01em;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(12,14,20,0.92);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 64px; height: 68px;
+}
+.logo {
+  font-family: 'Fraunces', serif;
+  font-weight: 900; font-size: 22px;
+  color: var(--white); letter-spacing: -0.5px;
+}
+.logo em { color: var(--wa); font-style: normal; }
+.nav-links { display: flex; gap: 32px; }
+.nav-links a {
+  color: var(--muted); text-decoration: none;
+  font-size: 14px; font-weight: 500;
+  transition: color .2s;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-wa {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--wa); color: white;
+  padding: 10px 22px; border-radius: 50px;
+  font-size: 14px; font-weight: 700;
+  text-decoration: none; transition: all .2s;
+  box-shadow: 0 2px 16px rgba(37,211,102,0.3);
+}
+.nav-wa:hover { background: var(--wa-dark); transform: translateY(-1px); }
+.nav-wa svg { width: 17px; height: 17px; }
+
+/* ── HERO ── */
+.hero-wrap {
+  position: relative; overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.hero-glow {
+  position: absolute; top: -200px; left: 50%;
+  transform: translateX(-50%);
+  width: 800px; height: 600px;
+  background: radial-gradient(ellipse, rgba(79,142,247,0.12) 0%, rgba(139,92,246,0.08) 40%, transparent 70%);
+  pointer-events: none;
+}
+.hero {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 64px; align-items: center;
+  padding: 96px 64px 80px;
+  max-width: 1280px; margin: 0 auto;
+  position: relative; z-index: 1;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  padding: 7px 16px; border-radius: 50px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.05em;
+  margin-bottom: 28px;
+}
+.hero-eyebrow .dot-live {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--wa); animation: blink 1.8s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.85)} }
+
+.hero h1 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(42px, 5.5vw, 68px);
+  font-weight: 900; line-height: 1.08;
+  letter-spacing: -2px; color: var(--white);
+  margin-bottom: 24px;
+}
+.hero h1 .hl {
+  background: linear-gradient(90deg, var(--wa), var(--blue));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-desc {
+  font-size: 17px; color: var(--muted);
+  line-height: 1.8; margin-bottom: 40px; max-width: 480px;
+}
+
+.hero-ctas { display: flex; flex-direction: column; gap: 14px; max-width: 380px; }
+
+.btn-wa-hero {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  background: var(--wa); color: white;
+  padding: 18px 28px; border-radius: 14px;
+  font-size: 17px; font-weight: 800;
+  text-decoration: none; transition: all .25s;
+  box-shadow: 0 4px 24px rgba(37,211,102,0.35);
+  position: relative; overflow: hidden;
+}
+.btn-wa-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+}
+.btn-wa-hero:hover { background: var(--wa-dark); transform: translateY(-2px); box-shadow: 0 8px 40px rgba(37,211,102,0.5); }
+.btn-wa-hero svg { width: 24px; height: 24px; flex-shrink: 0; }
+
+.hero-micro {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 12px; color: var(--dim);
+}
+.hero-micro svg { width: 13px; height: 13px; color: var(--wa); }
+
+.hero-trust-row {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 18px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; margin-top: 6px;
+}
+.avs { display: flex; }
+.av {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--bg); margin-left: -8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; flex-shrink: 0;
+}
+.av:first-child { margin-left: 0; }
+.av-a { background: #fbbf24; color: #78350f; }
+.av-b { background: #60a5fa; color: #1e3a5f; }
+.av-c { background: #f87171; color: #7f1d1d; }
+.av-d { background: #a78bfa; color: #3b0764; }
+.trust-txt { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.trust-txt strong { color: var(--ink); display: block; font-size: 13px; }
+
+/* ── WA CHAT MOCKUP ── */
+.chat-mockup {
+  position: relative;
+}
+.phone-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: var(--shadow), var(--glow-wa);
+  max-width: 340px; margin: 0 auto;
+}
+.phone-bar {
+  background: #075e54;
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.phone-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #25d366;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.phone-name { font-size: 14px; font-weight: 700; color: white; }
+.phone-status { font-size: 11px; color: rgba(255,255,255,0.6); display: flex; align-items: center; gap: 4px; }
+.phone-status::before { content:''; width:6px;height:6px;border-radius:50%;background:#25d366;animation:blink 2s infinite; }
+
+.chat-body {
+  background: #e5ddd5;
+  padding: 16px 12px;
+  display: flex; flex-direction: column; gap: 8px;
+  min-height: 380px;
+  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b2a99a' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+.msg { display: flex; flex-direction: column; max-width: 85%; }
+.msg.user { align-self: flex-end; }
+.msg.bot { align-self: flex-start; }
+.msg-bubble {
+  padding: 9px 12px; border-radius: 12px;
+  font-size: 13px; line-height: 1.5; position: relative;
+}
+.msg.user .msg-bubble { background: #dcf8c6; color: #111; border-radius: 12px 12px 2px 12px; }
+.msg.bot .msg-bubble { background: white; color: #111; border-radius: 12px 12px 12px 2px; }
+.msg-time { font-size: 10px; color: #999; margin-top: 3px; align-self: flex-end; }
+.msg.bot .msg-time { align-self: flex-start; }
+
+.typing-indicator {
+  display: flex; align-items: center; gap: 3px;
+  background: white; padding: 10px 14px;
+  border-radius: 12px 12px 12px 2px;
+  align-self: flex-start; width: fit-content;
+}
+.typing-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #999; animation: typingBounce 1.2s infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-4px)} }
+
+.ai-badge-float {
+  position: absolute;
+  top: -14px; right: -14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: var(--shadow);
+  display: flex; align-items: center; gap: 8px;
+  animation: floatY 3s ease-in-out infinite;
+  white-space: nowrap;
+}
+@keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+.ai-badge-float .icon { font-size: 20px; }
+.ai-badge-float .label { font-size: 12px; font-weight: 700; color: var(--ink); }
+.ai-badge-float .sub { font-size: 10px; color: var(--muted); }
+
+.stats-float {
+  position: absolute;
+  bottom: -14px; left: -14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: var(--shadow);
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; min-width: 180px;
+  animation: floatY 3.5s ease-in-out infinite 0.5s;
+}
+.sf-val { font-family: 'Fraunces', serif; font-size: 22px; font-weight: 900; color: var(--white); line-height: 1; }
+.sf-lab { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.sf-up { color: var(--green); font-size: 10px; font-weight: 600; }
+
+/* ── LOGOS ── */
+.logos-band {
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  padding: 24px 64px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 0; position: relative; z-index: 1;
+}
+.logos-label { font-size: 12px; color: var(--dim); letter-spacing: 0.1em; font-weight: 600; margin-right: 40px; white-space: nowrap; }
+.logos-items { display: flex; align-items: center; gap: 40px; flex-wrap: wrap; justify-content: center; }
+.logo-chip {
+  display: flex; align-items: center; gap: 7px;
+  font-size: 14px; font-weight: 700; color: var(--dim);
+  letter-spacing: -0.2px;
+}
+.logo-chip svg { width: 20px; height: 20px; }
+
+/* ── PROBLEM ── */
+.problem-section {
+  padding: 96px 64px;
+  max-width: 1280px; margin: 0 auto;
+}
+.section-super {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+  color: var(--wa); margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-super::before { content:''; width:24px; height:2px; background:var(--wa); border-radius:2px; }
+.section-h2 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(32px, 4vw, 50px);
+  font-weight: 900; letter-spacing: -1.5px; line-height: 1.1;
+  color: var(--white); margin-bottom: 14px;
+}
+.section-sub { font-size: 16px; color: var(--muted); line-height: 1.75; margin-bottom: 56px; max-width: 540px; }
+
+.pain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.pain-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px;
+  position: relative; overflow: hidden;
+  transition: border-color .3s, transform .3s;
+}
+.pain-card:hover { border-color: #ef444440; transform: translateY(-3px); }
+.pain-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #ef4444, #f97316);
+}
+.pain-icon { font-size: 28px; margin-bottom: 14px; display: block; }
+.pain-title { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+.pain-desc { font-size: 13px; color: var(--muted); line-height: 1.7; }
+
+/* ── SOLUTION ── */
+.solution-section {
+  background: var(--surface);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 96px 64px;
+}
+.solution-inner {
+  max-width: 1280px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+}
+.sol-list { display: flex; flex-direction: column; gap: 20px; margin-top: 40px; }
+.sol-item {
+  display: flex; gap: 16px;
+  padding: 20px; border-radius: 14px;
+  border: 1px solid var(--border-soft);
+  background: var(--card);
+  transition: border-color .3s, box-shadow .3s;
+}
+.sol-item:hover { border-color: rgba(37,211,102,0.3); box-shadow: 0 0 24px rgba(37,211,102,0.06); }
+.sol-ic {
+  width: 44px; height: 44px; border-radius: 10px;
+  background: var(--wa-soft); border: 1px solid rgba(37,211,102,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.sol-title { font-size: 15px; font-weight: 700; color: var(--white); margin-bottom: 5px; }
+.sol-desc { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+/* right: workflow visual */
+.workflow-visual {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px;
+  box-shadow: var(--shadow);
+}
+.wf-header { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0.1em; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; }
+.wf-live { background: var(--wa-soft); color: var(--wa); padding: 3px 10px; border-radius: 50px; font-size: 10px; display: flex; align-items: center; gap: 5px; }
+.wf-live::before { content:''; width:5px;height:5px;border-radius:50%;background:var(--wa);animation:blink 1.5s infinite; }
+
+.wf-nodes { display: flex; flex-direction: column; gap: 0; }
+.wf-node {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 0; position: relative;
+}
+.wf-node:not(:last-child)::after {
+  content: '';
+  position: absolute; left: 19px; bottom: -1px;
+  width: 2px; height: 14px;
+  background: repeating-linear-gradient(180deg, var(--border) 0, var(--border) 4px, transparent 4px, transparent 8px);
+}
+.wf-ic {
+  width: 40px; height: 40px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0; border: 1px solid var(--border);
+  background: var(--surface);
+}
+.wf-ic.active { border-color: rgba(37,211,102,0.4); background: var(--wa-soft); box-shadow: 0 0 16px rgba(37,211,102,0.15); }
+.wf-ic.thinking { border-color: rgba(139,92,246,0.4); background: var(--purple-soft); }
+.wf-label { font-size: 13px; font-weight: 600; color: var(--ink); }
+.wf-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.wf-status {
+  margin-left: auto;
+  font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 50px;
+}
+.st-done { background: var(--wa-soft); color: var(--wa); }
+.st-run { background: var(--purple-soft); color: var(--purple); animation: pulse-label 1.5s infinite; }
+@keyframes pulse-label { 0%,100%{opacity:1} 50%{opacity:0.5} }
+.st-wait { background: var(--surface); color: var(--dim); }
+
+.wf-divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+.wf-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 4px; }
+.wf-stat { background: var(--surface); border-radius: 8px; padding: 10px; border: 1px solid var(--border); text-align: center; }
+.wf-stat-val { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 900; color: var(--white); }
+.wf-stat-lab { font-size: 9px; color: var(--muted); margin-top: 2px; letter-spacing: 0.06em; }
+
+/* ── HOW IT WORKS ── */
+.how-section { padding: 96px 64px; max-width: 1280px; margin: 0 auto; }
+.how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.how-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px; padding: 28px 24px;
+  position: relative; transition: all .3s;
+}
+.how-card:hover { transform: translateY(-4px); border-color: rgba(79,142,247,0.3); box-shadow: 0 0 32px rgba(79,142,247,0.08); }
+.how-num {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  color: white; font-weight: 800; font-size: 16px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 20px;
+}
+.how-card h3 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 10px; }
+.how-card p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.how-time { margin-top: 16px; font-size: 11px; font-weight: 700; color: var(--blue); background: var(--blue-soft); padding: 4px 12px; border-radius: 50px; display: inline-block; }
+
+/* ── FEATURES BENTO ── */
+.bento-section {
+  padding: 0 64px 96px;
+  max-width: 1280px; margin: 0 auto;
+}
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  grid-template-rows: auto;
+  gap: 16px;
+}
+.bento-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 28px;
+  transition: all .3s; overflow: hidden; position: relative;
+}
+.bento-card:hover { border-color: rgba(79,142,247,0.25); }
+.bc-1 { grid-column: span 7; }
+.bc-2 { grid-column: span 5; }
+.bc-3 { grid-column: span 4; }
+.bc-4 { grid-column: span 4; }
+.bc-5 { grid-column: span 4; }
+.bento-icon { font-size: 32px; margin-bottom: 16px; display: block; }
+.bento-title { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+.bento-desc { font-size: 13px; color: var(--muted); line-height: 1.75; }
+.bento-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--wa-soft); color: var(--wa);
+  border: 1px solid rgba(37,211,102,0.2);
+  padding: 5px 12px; border-radius: 50px;
+  font-size: 11px; font-weight: 700; margin-top: 14px;
+}
+
+/* mini convo in bento */
+.mini-convo { margin-top: 20px; display: flex; flex-direction: column; gap: 8px; }
+.mini-msg { max-width: 80%; padding: 8px 12px; border-radius: 10px; font-size: 12px; line-height: 1.5; }
+.mm-user { background: rgba(37,211,102,0.1); border: 1px solid rgba(37,211,102,0.2); color: var(--ink); align-self: flex-end; }
+.mm-bot { background: var(--card); border: 1px solid var(--border); color: var(--ink); align-self: flex-start; }
+.mm-label { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; margin-bottom: 4px; color: var(--dim); }
+
+/* 24/7 circle */
+.circle-247 {
+  display: flex; align-items: center; justify-content: center;
+  margin-top: 20px;
+}
+.ring-outer {
+  width: 100px; height: 100px; border-radius: 50%;
+  border: 2px solid rgba(37,211,102,0.2);
+  display: flex; align-items: center; justify-content: center;
+  animation: spinSlow 8s linear infinite;
+  position: relative;
+}
+.ring-outer::before {
+  content: ''; position: absolute;
+  width: 100%; height: 100%; border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--wa);
+  animation: spinSlow 2s linear infinite reverse;
+}
+@keyframes spinSlow { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+.ring-inner {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--wa-soft); border: 1px solid rgba(37,211,102,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif; font-size: 24px; font-weight: 900; color: var(--wa);
+}
+
+/* ── TESTIMONIALS ── */
+.testi-section {
+  background: var(--surface);
+  border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+  padding: 96px 64px;
+}
+.testi-inner { max-width: 1280px; margin: 0 auto; }
+.testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.testi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px; padding: 28px;
+  transition: all .3s;
+}
+.testi-card:hover { border-color: rgba(37,211,102,0.25); box-shadow: 0 0 32px rgba(37,211,102,0.06); transform: translateY(-3px); }
+.stars { color: var(--amber); font-size: 15px; letter-spacing: 2px; margin-bottom: 16px; }
+.testi-text { font-size: 14px; color: var(--muted); line-height: 1.8; margin-bottom: 20px; font-style: italic; }
+.testi-text strong { color: var(--ink); font-style: normal; }
+.testi-author { display: flex; align-items: center; gap: 12px; }
+.t-av {
+  width: 42px; height: 42px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 16px; flex-shrink: 0; border: 2px solid var(--border);
+}
+.t-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.t-role { font-size: 12px; color: var(--dim); }
+.t-verified { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--wa); font-weight: 700; margin-top: 3px; }
+.t-verified svg { width: 11px; height: 11px; }
+
+/* ── PRICING ── */
+.pricing-section { padding: 96px 64px; max-width: 1280px; margin: 0 auto; }
+.pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 56px; }
+.price-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 36px 32px;
+  position: relative; transition: all .3s;
+}
+.price-card:hover { transform: translateY(-4px); }
+.price-card.featured {
+  background: linear-gradient(135deg, var(--wa-soft) 0%, var(--surface) 100%);
+  border-color: rgba(37,211,102,0.4);
+  box-shadow: 0 0 48px rgba(37,211,102,0.1);
+}
+.pop-label {
+  position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+  background: var(--wa); color: #000;
+  font-size: 10px; font-weight: 800; letter-spacing: 0.1em;
+  padding: 4px 16px; border-radius: 50px; white-space: nowrap;
+}
+.price-tier { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; color: var(--dim); margin-bottom: 16px; }
+.price-num {
+  font-family: 'Fraunces', serif;
+  font-size: 52px; font-weight: 900; line-height: 1;
+  color: var(--white); letter-spacing: -2px; margin-bottom: 4px;
+}
+.price-num .sup { font-size: 22px; vertical-align: super; }
+.price-note { font-size: 12px; color: var(--dim); margin-bottom: 28px; }
+.price-sep { height: 1px; background: var(--border); margin-bottom: 24px; }
+.feat-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px; }
+.fi { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+.fi.on { color: var(--ink); }
+.fi.off { opacity: 0.3; text-decoration: line-through; }
+.fi-ic { font-size: 14px; flex-shrink: 0; }
+
+.btn-price {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 15px; border-radius: 12px;
+  font-size: 15px; font-weight: 700; text-decoration: none;
+  transition: all .2s;
+}
+.bp-outline { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+.bp-outline:hover { border-color: var(--wa); color: var(--wa); }
+.bp-wa { background: var(--wa); color: #000; box-shadow: 0 2px 16px rgba(37,211,102,0.3); }
+.bp-wa:hover { background: var(--wa-dark); color: white; box-shadow: 0 4px 24px rgba(37,211,102,0.45); }
+.bp-wa svg { width: 18px; height: 18px; }
+
+/* ── GUARANTEE ── */
+.guarantee-bar {
+  background: var(--surface);
+  border: 1px solid rgba(37,211,102,0.2);
+  border-radius: 20px; padding: 36px 44px;
+  display: flex; align-items: center; gap: 32px;
+  margin-top: 36px;
+  box-shadow: 0 0 40px rgba(37,211,102,0.05);
+}
+.g-icon { font-size: 52px; flex-shrink: 0; }
+.g-title { font-family: 'Fraunces', serif; font-size: 24px; font-weight: 800; color: var(--white); margin-bottom: 8px; }
+.g-desc { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+/* ── FAQ ── */
+.faq-section { padding: 96px 64px; max-width: 1280px; margin: 0 auto; }
+.faq-wrap { border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-top: 40px; }
+.faq-item { border-bottom: 1px solid var(--border-soft); }
+.faq-item:last-child { border-bottom: none; }
+.faq-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 28px; font-size: 15px; font-weight: 600; color: var(--ink);
+  cursor: pointer; background: var(--surface); transition: background .2s; user-select: none;
+}
+.faq-q:hover { background: var(--card); }
+.faq-arrow { font-size: 20px; color: var(--dim); transition: transform .3s; }
+.faq-a {
+  padding: 0 28px; font-size: 14px; color: var(--muted); line-height: 1.8;
+  max-height: 0; overflow: hidden; transition: max-height .4s ease, padding .3s;
+  background: var(--surface);
+}
+.faq-item.open .faq-a { max-height: 220px; padding: 0 28px 22px; }
+.faq-item.open .faq-arrow { transform: rotate(45deg); }
+
+/* ── FINAL CTA ── */
+.final-cta {
+  position: relative; text-align: center;
+  padding: 112px 64px; overflow: hidden;
+  border-top: 1px solid var(--border);
+}
+.final-cta::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(37,211,102,0.12) 0%, rgba(79,142,247,0.06) 40%, transparent 70%);
+}
+.final-cta h2 {
+  font-family: 'Fraunces', serif;
+  font-size: clamp(38px, 5.5vw, 68px);
+  font-weight: 900; letter-spacing: -2px; line-height: 1.08;
+  color: var(--white); margin-bottom: 20px; position: relative;
+}
+.final-cta h2 .hl {
+  background: linear-gradient(90deg, var(--wa), var(--blue));
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.final-cta p { font-size: 17px; color: var(--muted); margin-bottom: 44px; position: relative; }
+.final-btn-wa {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: var(--wa); color: white;
+  padding: 20px 44px; border-radius: 16px;
+  font-size: 18px; font-weight: 800;
+  text-decoration: none; transition: all .25s;
+  box-shadow: 0 4px 32px rgba(37,211,102,0.4);
+  position: relative;
+}
+.final-btn-wa::before {
+  content: ''; position: absolute; inset: 0; border-radius: 16px;
+  background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+}
+.final-btn-wa:hover { background: var(--wa-dark); transform: translateY(-3px); box-shadow: 0 8px 48px rgba(37,211,102,0.55); }
+.final-btn-wa svg { width: 26px; height: 26px; }
+
+.reassure-row {
+  display: flex; align-items: center; justify-content: center; gap: 28px;
+  margin-top: 28px; flex-wrap: wrap; position: relative;
+}
+.rr { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--dim); }
+.rr svg { width: 14px; height: 14px; color: var(--wa); }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 36px 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 16px;
+}
+footer .logo { font-size: 18px; }
+footer p { font-size: 12px; color: var(--dim); }
+
+/* ── FLOAT WA ── */
+.float-wa {
+  position: fixed; bottom: 28px; right: 28px; z-index: 500;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--wa); color: white;
+  padding: 14px 22px; border-radius: 50px;
+  font-size: 15px; font-weight: 700; text-decoration: none;
+  box-shadow: 0 4px 24px rgba(37,211,102,0.45);
+  transition: all .25s;
+  animation: popUp .5s ease 1.2s both;
+}
+@keyframes popUp { from{transform:scale(0) translateY(20px);opacity:0} to{transform:scale(1);opacity:1} }
+.float-wa:hover { background: var(--wa-dark); transform: translateY(-3px); }
+.float-wa svg { width: 22px; height: 22px; }
+.float-pulse {
+  position: absolute; top: -4px; right: -4px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: #ef4444; border: 2px solid var(--bg);
+  animation: pulse-ring 2s infinite;
+}
+@keyframes pulse-ring { 0%{box-shadow:0 0 0 0 rgba(239,68,68,.6)} 70%{box-shadow:0 0 0 8px rgba(239,68,68,0)} 100%{box-shadow:0 0 0 0 rgba(239,68,68,0)} }
+
+/* ── REVEAL ── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .6s ease, transform .6s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* WA SVG path reusable */
+.wa-icon { display: inline-block; }
+
+@media (max-width: 1024px) {
+  nav { padding: 0 24px; }
+  .hero { grid-template-columns: 1fr; padding: 80px 24px; }
+  .chat-mockup .ai-badge-float, .chat-mockup .stats-float { display: none; }
+  .solution-inner { grid-template-columns: 1fr; gap: 40px; }
+  .pain-grid, .how-grid, .testi-grid, .pricing-grid { grid-template-columns: 1fr; }
+  .bento-grid { display: flex; flex-direction: column; }
+  .problem-section, .how-section, .bento-section, .faq-section, .pricing-section { padding: 64px 24px; }
+  .solution-section, .testi-section { padding: 64px 24px; }
+  .final-cta { padding: 80px 24px; }
+  .logos-band { padding: 20px 24px; }
+  footer { padding: 28px 24px; flex-direction: column; text-align: center; }
+  .guarantee-bar { flex-direction: column; text-align: center; padding: 28px 24px; }
+}
+@media (max-width: 640px) {
+  .float-wa span { display: none; }
+  .float-wa { padding: 14px; border-radius: 50%; }
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  🤖 CS AI aktif 24/7 — Tidak pernah tidur, tidak pernah lupa membalas
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Reply<em>AI</em></div>
+  <div class="nav-links">
+    <a href="#solution">Fitur</a>
+    <a href="#how">Cara Kerja</a>
+    <a href="#testi">Testimoni</a>
+    <a href="#pricing">Harga</a>
+  </div>
+  <a href="https://wa.me/628XXXXXXXXXX?text=Halo%2C%20saya%20tertarik%20dengan%20CS%20AI%20WhatsApp%20Automation" class="nav-wa" target="_blank">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.552 4.112 1.516 5.842L0 24l6.335-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.002-1.366l-.358-.214-3.76.98.999-3.645-.234-.374A9.818 9.818 0 0112 2.182c5.42 0 9.818 4.398 9.818 9.818 0 5.421-4.398 9.818-9.818 9.818z"/></svg>
+    Konsultasi Gratis
+  </a>
+</nav>
+
+<!-- HERO -->
+<div class="hero-wrap">
+  <div class="hero-glow"></div>
+  <div class="hero">
+    <!-- LEFT -->
+    <div>
+      <div class="hero-eyebrow">
+        <div class="dot-live"></div>
+        n8n · WhatsApp · Google Gemini AI
+      </div>
+      <h1>CS WhatsApp kamu<br><span class="hl">balas otomatis</span><br>24 jam sehari</h1>
+      <p class="hero-desc">
+        Pelanggan tanya jam 2 pagi? Tetap dibalas. Ratusan pesan masuk sekaligus? Semua terlayani. AI CS kamu tidak pernah lelah, tidak pernah lupa, tidak pernah marah.
+      </p>
+      <div class="hero-ctas">
+        <a href="https://wa.me/628XXXXXXXXXX?text=Halo%2C%20saya%20mau%20tanya%20soal%20CS%20AI%20WhatsApp" class="btn-wa-hero" target="_blank">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.552 4.112 1.516 5.842L0 24l6.335-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.002-1.366l-.358-.214-3.76.98.999-3.645-.234-.374A9.818 9.818 0 0112 2.182c5.42 0 9.818 4.398 9.818 9.818 0 5.421-4.398 9.818-9.818 9.818z"/></svg>
+          Coba Gratis — Chat Sekarang
+        </a>
+        <div class="hero-micro">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+          Konsultasi gratis · Tidak ada kewajiban · Respon &lt; 1 jam
+        </div>
+        <div class="hero-trust-row">
+          <div class="avs">
+            <div class="av av-a">T</div>
+            <div class="av av-b">M</div>
+            <div class="av av-c">L</div>
+            <div class="av av-d">F</div>
+          </div>
+          <div class="trust-txt">
+            <strong>Dipercaya 30+ bisnis</strong>
+            toko online, properti, klinik, jasa — sudah aktif 24/7
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: WA Chat Mockup -->
+    <div class="chat-mockup">
+      <div class="ai-badge-float">
+        <div class="icon">🧠</div>
+        <div>
+          <div class="label">Gemini AI Active</div>
+          <div class="sub">Membalas dalam &lt; 3 detik</div>
+        </div>
+      </div>
+      <div class="phone-wrap">
+        <div class="phone-bar">
+          <div class="phone-av">🤖</div>
+          <div>
+            <div class="phone-name">CS Toko Anda</div>
+            <div class="phone-status">online</div>
+          </div>
+        </div>
+        <div class="chat-body">
+          <div class="msg user">
+            <div class="msg-bubble">Kak, produk masker yang kemarin ada stoknya ga?</div>
+            <div class="msg-time">02:14</div>
+          </div>
+          <div class="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+          </div>
+          <div class="msg bot">
+            <div class="msg-bubble">Halo Kak! 😊 Masker Glow Series masih ada stok ya, tersedia dalam 3 varian: Original, Charcoal, dan Rose Gold.<br><br>Mau pesan yang mana? Saya bantu proses langsung ya!</div>
+            <div class="msg-time">02:14 ✓✓</div>
+          </div>
+          <div class="msg user">
+            <div class="msg-bubble">Mau 2 charcoal, kirim ke Surabaya bisa?</div>
+            <div class="msg-time">02:15</div>
+          </div>
+          <div class="msg bot">
+            <div class="msg-bubble">Bisa banget Kak! Ongkir ke Surabaya sekitar Rp18.000–25.000 tergantung ekspedisi. Estimasi 2–3 hari sampai 📦<br><br>Mau saya buatkan link pembayarannya sekarang?</div>
+            <div class="msg-time">02:15 ✓✓</div>
+          </div>
+        </div>
+      </div>
+      <div class="stats-float">
+        <div>
+          <div class="sf-val">2.4s</div>
+          <div class="sf-lab">AVG RESPONSE</div>
+          <div class="sf-up">⚡ Instant</div>
+        </div>
+        <div>
+          <div class="sf-val">98%</div>
+          <div class="sf-lab">SOLVED BY AI</div>
+          <div class="sf-up">✓ Auto</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LOGOS -->
+<div class="logos-band">
+  <div class="logos-label">TEKNOLOGI YANG DIGUNAKAN</div>
+  <div class="logos-items">
+    <div class="logo-chip">
+      <svg viewBox="0 0 24 24" fill="#e8452c"><circle cx="12" cy="12" r="10"/></svg>
+      n8n
+    </div>
+    <div class="logo-chip">
+      <svg viewBox="0 0 24 24" fill="#4285f4"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Gemini AI
+    </div>
+    <div class="logo-chip">
+      <svg viewBox="0 0 24 24" fill="#25D366"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.552 4.112 1.516 5.842L0 24l6.335-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.002-1.366l-.358-.214-3.76.98.999-3.645-.234-.374A9.818 9.818 0 0112 2.182c5.42 0 9.818 4.398 9.818 9.818 0 5.421-4.398 9.818-9.818 9.818z"/></svg>
+      WhatsApp
+    </div>
+    <div class="logo-chip">
+      <svg viewBox="0 0 24 24" fill="#4f8ef7"><rect width="24" height="24" rx="6" fill="#4f8ef7"/><path d="M7 8h10M7 12h10M7 16h6" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+      WAHA API
+    </div>
+    <div class="logo-chip">
+      <svg viewBox="0 0 24 24"><path fill="#8b5cf6" d="M12 2a10 10 0 100 20A10 10 0 0012 2zm0 18a8 8 0 110-16 8 8 0 010 16zm-1-13h2v6h-2zm0 8h2v2h-2z"/></svg>
+      AI Memory
+    </div>
+  </div>
+</div>
+
+<!-- PROBLEM -->
+<section class="problem-section">
+  <div class="section-super">MASALAH NYATA</div>
+  <h2 class="section-h2">CS manusia punya batas.<br>Bisnis tidak boleh.</h2>
+  <p class="section-sub">Kalau kamu masih andalkan CS manual, kamu kehilangan penjualan tanpa sadar.</p>
+  <div class="pain-grid reveal">
+    <div class="pain-card">
+      <span class="pain-icon">🌙</span>
+      <div class="pain-title">Pelanggan tanya tengah malam, tidak ada yang balas</div>
+      <p class="pain-desc">70% keputusan beli terjadi dalam 10 menit pertama. Kalau tidak dibalas, mereka pergi ke kompetitor yang lebih responsif.</p>
+    </div>
+    <div class="pain-card">
+      <span class="pain-icon">😤</span>
+      <div class="pain-title">CS kewalahan, respons lambat & tidak konsisten</div>
+      <p class="pain-desc">Saat chat masuk bersamaan, kualitas jawaban turun. Ada yang terlayani dengan baik, ada yang diabaikan. Pengalaman pelanggan jadi tidak konsisten.</p>
+    </div>
+    <div class="pain-card">
+      <span class="pain-icon">💸</span>
+      <div class="pain-title">Gaji CS mahal, tapi pertanyaan yang masuk itu-itu saja</div>
+      <p class="pain-desc">80% pertanyaan yang masuk adalah hal yang sama: harga, stok, ongkir, cara order. Tidak efisien kalau harus dibalas manual terus.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUTION -->
+<div class="solution-section" id="solution">
+  <div class="solution-inner">
+    <div>
+      <div class="section-super">SOLUSI</div>
+      <h2 class="section-h2">AI yang benar-benar mengerti bisnis kamu</h2>
+      <p class="section-sub">Bukan sekadar chatbot kaku dengan menu pilihan. Ini AI yang bisa berpikir, mengingat konteks, dan menjawab layaknya CS terbaik kamu.</p>
+      <div class="sol-list reveal">
+        <div class="sol-item">
+          <div class="sol-ic">🧠</div>
+          <div>
+            <div class="sol-title">AI dengan Memory & Konteks</div>
+            <p class="sol-desc">AI mengingat percakapan sebelumnya. Pelanggan tidak perlu mengulang dari awal setiap kali chat.</p>
+          </div>
+        </div>
+        <div class="sol-item">
+          <div class="sol-ic">🔀</div>
+          <div>
+            <div class="sol-title">Handover ke Manusia Otomatis</div>
+            <p class="sol-desc">Kalau ada isu kompleks atau pelanggan minta berbicara dengan manusia, AI langsung set hold dan notif tim kamu.</p>
+          </div>
+        </div>
+        <div class="sol-item">
+          <div class="sol-ic">⚙️</div>
+          <div>
+            <div class="sol-title">Disesuaikan 100% dengan Bisnis Kamu</div>
+            <p class="sol-desc">AI dilatih dengan info produk, SOP, dan tone of voice bisnismu. Jawabannya terasa natural, bukan robot.</p>
+          </div>
+        </div>
+        <div class="sol-item">
+          <div class="sol-ic">📊</div>
+          <div>
+            <div class="sol-title">Laporan & Monitoring</div>
+            <p class="sol-desc">Pantau jumlah chat masuk, tingkat resolusi AI, dan kapan tim manusia perlu turun tangan.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workflow Visual -->
+    <div class="workflow-visual reveal">
+      <div class="wf-header">
+        N8N WORKFLOW — LIVE
+        <div class="wf-live">RUNNING</div>
+      </div>
+      <div class="wf-nodes">
+        <div class="wf-node">
+          <div class="wf-ic active">📱</div>
+          <div>
+            <div class="wf-label">WAHA Trigger</div>
+            <div class="wf-sub">Pesan WhatsApp masuk</div>
+          </div>
+          <div class="wf-status st-done">✓ Done</div>
+        </div>
+        <div class="wf-node">
+          <div class="wf-ic active">🔍</div>
+          <div>
+            <div class="wf-label">Cek Pengirim & Status</div>
+            <div class="wf-sub">isFromMe, hold list, personal chat</div>
+          </div>
+          <div class="wf-status st-done">✓ Done</div>
+        </div>
+        <div class="wf-node">
+          <div class="wf-ic thinking">🧠</div>
+          <div>
+            <div class="wf-label">AI Agent (Gemini)</div>
+            <div class="wf-sub">Generate respons + cek memory</div>
+          </div>
+          <div class="wf-status st-run">● Running</div>
+        </div>
+        <div class="wf-node">
+          <div class="wf-ic">⌨️</div>
+          <div>
+            <div class="wf-label">Typing Effect</div>
+            <div class="wf-sub">Terasa seperti manusia mengetik</div>
+          </div>
+          <div class="wf-status st-wait">Waiting</div>
+        </div>
+        <div class="wf-node">
+          <div class="wf-ic">📤</div>
+          <div>
+            <div class="wf-label">Kirim Balasan</div>
+            <div class="wf-sub">Via WAHA ke WhatsApp</div>
+          </div>
+          <div class="wf-status st-wait">Waiting</div>
+        </div>
+      </div>
+      <div class="wf-divider"></div>
+      <div class="wf-stats">
+        <div class="wf-stat">
+          <div class="wf-stat-val">2.4s</div>
+          <div class="wf-stat-lab">RESP TIME</div>
+        </div>
+        <div class="wf-stat">
+          <div class="wf-stat-val">98%</div>
+          <div class="wf-stat-lab">AUTO SOLVE</div>
+        </div>
+        <div class="wf-stat">
+          <div class="wf-stat-val">24/7</div>
+          <div class="wf-stat-lab">UPTIME</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="section-super">CARA KERJA</div>
+  <h2 class="section-h2">Setup dalam 3–5 hari,<br>aktif selamanya</h2>
+  <p class="section-sub">Saya handle semua hal teknis. Kamu tinggal review dan approve.</p>
+  <div class="how-grid reveal">
+    <div class="how-card">
+      <div class="how-num">1</div>
+      <h3>Konsultasi & Analisis</h3>
+      <p>Kita diskusi kebutuhan bisnis kamu — jenis pertanyaan yang sering masuk, produk, SOP CS yang sudah ada.</p>
+      <div class="how-time">⏱ Hari 1</div>
+    </div>
+    <div class="how-card">
+      <div class="how-num">2</div>
+      <h3>Training AI & Setup</h3>
+      <p>AI dilatih dengan data produk dan SOP kamu. Workflow n8n dibangun dan dihubungkan ke nomor WhatsApp bisnis.</p>
+      <div class="how-time">⏱ Hari 2–3</div>
+    </div>
+    <div class="how-card">
+      <div class="how-num">3</div>
+      <h3>Testing & Fine-tuning</h3>
+      <p>Kita test bersama dengan berbagai skenario percakapan. Disesuaikan sampai responnya terasa natural dan akurat.</p>
+      <div class="how-time">⏱ Hari 4</div>
+    </div>
+    <div class="how-card">
+      <div class="how-num">4</div>
+      <h3>Go Live & Handover</h3>
+      <p>AI aktif di nomor WhatsApp kamu. Kamu dapat panduan lengkap cara monitor dan cara update knowledge AI.</p>
+      <div class="how-time">⏱ Hari 5</div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES BENTO -->
+<section class="bento-section">
+  <div class="section-super">FITUR UNGGULAN</div>
+  <h2 class="section-h2" style="margin-bottom:40px">Semua yang dibutuhkan<br>CS bisnis modern</h2>
+  <div class="bento-grid reveal">
+    <div class="bento-card bc-1">
+      <span class="bento-icon">💬</span>
+      <div class="bento-title">Percakapan Natural seperti Manusia</div>
+      <p class="bento-desc">AI tidak hanya membaca keyword — dia memahami konteks kalimat. Pelanggan tidak sadar sedang chat dengan bot.</p>
+      <div class="mini-convo">
+        <div class="mm-label">CONTOH PERCAKAPAN NYATA</div>
+        <div class="mini-msg mm-user">Kak masker yang kemarin aku pesen udah dikirim belum ya? Yang rose gold</div>
+        <div class="mini-msg mm-bot">Halo kak! Pesanan Rose Gold Mask kamu sudah dikirim tadi jam 10 pagi ya, nomor resi JNE: JX123456789. Estimasi sampai besok 😊</div>
+      </div>
+      <div class="bento-pill">🧠 Context-aware AI</div>
+    </div>
+    <div class="bento-card bc-2">
+      <span class="bento-icon">🕐</span>
+      <div class="bento-title">Aktif 24/7 Tanpa Henti</div>
+      <p class="bento-desc">Tengah malam, hari libur, lebaran — AI tetap standby dan membalas dalam hitungan detik.</p>
+      <div class="circle-247">
+        <div class="ring-outer">
+          <div class="ring-inner">24/7</div>
+        </div>
+      </div>
+    </div>
+    <div class="bento-card bc-3">
+      <span class="bento-icon">🔀</span>
+      <div class="bento-title">Auto Handover ke Tim</div>
+      <p class="bento-desc">Kasus kompleks otomatis dialihkan ke CS manusia dengan notifikasi langsung.</p>
+    </div>
+    <div class="bento-card bc-4">
+      <span class="bento-icon">🧩</span>
+      <div class="bento-title">Memory Pelanggan</div>
+      <p class="bento-desc">AI ingat riwayat percakapan. Pelanggan tidak perlu mengulang info yang sama berulang kali.</p>
+    </div>
+    <div class="bento-card bc-5">
+      <span class="bento-icon">🛡️</span>
+      <div class="bento-title">Anti Spam & Filter Pesan</div>
+      <p class="bento-desc">Pesan dari grup, broadcast, atau spam otomatis difilter. Hanya chat personal yang diproses AI.</p>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<div class="testi-section" id="testi">
+  <div class="testi-inner">
+    <div class="section-super">TESTIMONI</div>
+    <h2 class="section-h2">Bisnis nyata, hasil nyata</h2>
+    <p class="section-sub">Dari toko online sampai klinik, CS AI sudah terbukti bekerja.</p>
+    <div class="testi-grid reveal">
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"Dulu CS saya sering kewalahan kalau weekend. Sekarang <strong>semua chat dibalas otomatis</strong> dan yang perlu follow-up baru saya handle. Konversi naik signifikan."</p>
+        <div class="testi-author">
+          <div class="t-av" style="background:#fef3c7;color:#92400e">TW</div>
+          <div>
+            <div class="t-name">Taufik W.</div>
+            <div class="t-role">Owner Toko Skincare Online · Jakarta</div>
+            <div class="t-verified">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              Klien terverifikasi
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"Yang bikin saya terkesan adalah AI-nya <strong>bisa ingat konteks percakapan</strong>. Pasien saya tidak perlu ngulang info tiap kali chat. Setup-nya juga cepat, 5 hari sudah live."</p>
+        <div class="testi-author">
+          <div class="t-av" style="background:#ede9fe;color:#5b21b6">ML</div>
+          <div>
+            <div class="t-name">dr. Mira L.</div>
+            <div class="t-role">Klinik Kecantikan · Bandung</div>
+            <div class="t-verified">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              Klien terverifikasi
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="stars">★★★★★</div>
+        <p class="testi-text">"Saya pikir AI bakal kaku dan pelanggan akan komplain. Ternyata sebaliknya — <strong>banyak pelanggan yang puas</strong> karena dibalas cepat. ROI-nya balik dalam 2 minggu."</p>
+        <div class="testi-author">
+          <div class="t-av" style="background:#dcfce7;color:#166534">FA</div>
+          <div>
+            <div class="t-name">Faisal A.</div>
+            <div class="t-role">Agency Properti · Surabaya</div>
+            <div class="t-verified">
+              <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+              Klien terverifikasi
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="section-super">HARGA</div>
+  <h2 class="section-h2">Investasi sekali,<br>CS aktif selamanya</h2>
+  <p class="section-sub">Bandingkan dengan gaji CS bulanan — ini jauh lebih hemat dan tidak pernah sakit atau cuti.</p>
+  <div class="pricing-grid reveal">
+    <div class="price-card">
+      <div class="price-tier">STARTER</div>
+      <div class="price-num"><span class="sup">Rp</span>1,5<span style="font-size:22px">jt</span></div>
+      <div class="price-note">Setup sekali · Tidak ada biaya bulanan</div>
+      <div class="price-sep"></div>
+      <div class="feat-list">
+        <div class="fi on"><span class="fi-ic">✅</span> 1 nomor WhatsApp</div>
+        <div class="fi on"><span class="fi-ic">✅</span> AI CS aktif 24/7</div>
+        <div class="fi on"><span class="fi-ic">✅</span> Training dengan data produkmu</div>
+        <div class="fi on"><span class="fi-ic">✅</span> Auto handover ke manusia</div>
+        <div class="fi off"><span class="fi-ic">—</span> AI Memory per pelanggan</div>
+        <div class="fi off"><span class="fi-ic">—</span> Laporan & dashboard</div>
+        <div class="fi off"><span class="fi-ic">—</span> Multi-agent (tim CS)</div>
+      </div>
+      <a href="https://wa.me/628XXXXXXXXXX?text=Halo%2C%20saya%20mau%20tanya%20paket%20Starter%20CS%20AI" class="btn-price bp-outline" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:17px;height:17px;color:var(--wa)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.552 4.112 1.516 5.842L0 24l6.335-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.002-1.366l-.358-.214-3.76.98.999-3.645-.234-.374A9.818 9.818 0 0112 2.182c5.42 0 9.818 4.398 9.818 9.818 0 5.421-4.398 9.818-9.818 9.818z"/></svg>
+        Tanya via WhatsApp
+      </a>
+    </div>
+
+    <div class="price-card featured">
+      <div class="pop-label">PALING LARIS</div>
+      <div class="price-tier">PROFESSIONAL</div>
+      <div class="price-num"><span class="sup">Rp</span>2,8<span style="font-size:22px">jt</span></div>
+      <div class="price-note">Setup sekali · Tidak ada biaya bulanan</div>
+      <div class="price-sep"></div>
+      <div class="feat-list">
+        <div class="fi on"><span class="fi-ic">✅</span> 1 nomor WhatsApp</div>
+        <div class="fi on"><span class="fi-ic">✅</span> AI CS aktif 24/7</div>
+        <div class="fi on"><span class="fi-ic">✅</span> Training mendalam + fine-tuning</div>
+        <div class="fi on"><span class="fi-ic">✅</span> Auto handover ke manusia</div>
+        <div class="fi on"><span class="fi-ic">✅</span> AI Memory per pelanggan</div>
+        <div class="fi on"><span class="fi-ic">✅</span> Laporan mingguan otomatis</div>
+        <div class="fi off"><span class="fi-ic">—</span> Multi-agent (tim CS)</div>
+      </div>
+      <a href="https://wa.me/628XXXXXXXXXX?text=Halo%2C%20saya%20mau%20order%20paket%20Professional%20CS%20AI" class="btn-price bp-wa" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.552 4.112 1.516 5.842L0 24l6.335-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.002-1.366l-.358-.214-3.76.98.999-3.645-.234-.374A9.818 9.818 0 0112 2.182c5.42 0 9.818 4.398 9.818 9.818 0 5.421-4.398 9.818-9.818 9.818z"/></svg>
+        Order via WhatsApp
+      </a>
+    </div>
+
+    <div class="price-card">
+      <div class="price-tier">ENTERPRISE</div>
+      <div class="price-num"><span class="sup">Rp</span>5<span style="font-size:22px">jt+</span></div>
+      <div class="price-note">Custom sesuai kebutuhan bisnis</div>
+      <div class="price-sep"></div>
+      <div class="feat-list">
+        <div class="fi on"><span class="fi-ic">✅</span> Multi nomor WhatsApp</div>
+        <div class="fi on"><span class="fi-ic">✅</span> AI CS aktif 24/7</div>
+        <div class="fi on"><span class="fi-ic">✅</span> Training + integrasi sistem</div>
+        <div class="fi on"><span class="fi-ic">✅</span> Auto handover + eskalasi</div>
+        <div class="fi on"><span class="fi-ic">✅</span> AI Memory per pelanggan</div>
+        <div class="fi on"><span class="fi-ic">✅</span> Dashboard realtime custom</div>
+        <div class="fi on"><span class="fi-ic">✅</span> Multi-agent tim CS</div>
+      </div>
+      <a href="https://wa.me/628XXXXXXXXXX?text=Halo%2C%20saya%20tertarik%20paket%20Enterprise%20CS%20AI%2C%20mau%20diskusi%20kebutuhan" class="btn-price bp-outline" target="_blank">
+        <svg viewBox="0 0 24 24" fill="currentColor" style="width:17px;height:17px;color:var(--wa)"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.552 4.122 1.516 5.842L0 24l6.335-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.002-1.366l-.358-.214-3.76.98.999-3.645-.234-.374A9.818 9.818 0 0112 2.182c5.42 0 9.818 4.398 9.818 9.818 0 5.421-4.398 9.818-9.818 9.818z"/></svg>
+        Diskusi via WhatsApp
+      </a>
+    </div>
+  </div>
+
+  <div class="guarantee-bar reveal">
+    <div class="g-icon">🛡️</div>
+    <div>
+      <div class="g-title">Garansi Revisi Sampai Puas</div>
+      <p class="g-desc">Kalau jawaban AI belum sesuai ekspektasi dalam 30 hari pertama, saya revisi dan fine-tune ulang tanpa biaya tambahan. Saya tidak akan berhenti sampai AI-nya benar-benar bekerja sesuai bisnis kamu.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="section-super">FAQ</div>
+  <h2 class="section-h2">Pertanyaan yang sering muncul</h2>
+  <div class="faq-wrap reveal">
+    <div class="faq-item">
+      <div class="faq-q">Apakah ini aman? Nomor WA saya tidak akan kena banned? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Aman. Sistem ini menggunakan WAHA (WhatsApp HTTP API) yang berjalan di server sendiri — bukan bulk sender atau blast. Cara kerjanya seperti membuka WhatsApp Web biasa, hanya diautomasi. Risiko banned sangat minimal jika digunakan secara wajar untuk CS normal.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Bagaimana AI tahu info produk dan SOP bisnis saya? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Kamu cukup berikan dokumen atau file info produk, FAQ, dan SOP CS yang sudah ada. Saya yang akan format dan masukkan ke sistem sebagai "knowledge base" AI. Semakin lengkap info yang kamu berikan, semakin cerdas AI-nya.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Apa yang terjadi kalau AI tidak bisa menjawab pertanyaan pelanggan? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Sistem punya fitur auto-handover. Kalau AI mendeteksi pertanyaan di luar kemampuannya, atau pelanggan meminta berbicara dengan manusia, chat otomatis ditandai dan notifikasi dikirim ke tim kamu. AI tidak akan mengarang jawaban yang salah.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Apakah perlu server/VPS sendiri? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Ya, perlu VPS untuk menjalankan WAHA dan n8n. Saya bisa bantu setup VPS dengan biaya sekitar Rp50–100rb/bulan dari provider lokal. Biaya ini ditanggung kamu sendiri sebagai biaya operasional, bukan termasuk harga setup.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Bisa dipakai untuk bisnis apa saja? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Sangat fleksibel. Sudah dipakai di toko online, klinik, properti, jasa pendidikan, travel agent, dan banyak lagi. Selama bisnismu berkomunikasi via WhatsApp, CS AI ini bisa diaplikasikan.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Kalau saya ingin update produk atau info baru, caranya bagaimana? <span class="faq-arrow">+</span></div>
+      <div class="faq-a">Kamu cukup kirimkan info baru ke saya, dan saya update knowledge base AI-nya. Untuk paket Professional ke atas, saya ajarkan caranya agar kamu bisa update sendiri tanpa perlu bantuan saya setiap saat.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final-cta">
+  <h2>CS kamu bisa <span class="hl">bekerja 24/7</span><br>mulai minggu ini.</h2>
+  <p>Setup 3–5 hari. Garansi revisi 30 hari. Konsultasi pertama gratis.</p>
+  <a href="https://wa.me/628XXXXXXXXXX?text=Halo%2C%20saya%20tertarik%20dengan%20CS%20AI%20WhatsApp.%20Boleh%20konsultasi%20gratis%3F" class="final-btn-wa" target="_blank">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.552 4.112 1.516 5.842L0 24l6.335-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.002-1.366l-.358-.214-3.76.98.999-3.645-.234-.374A9.818 9.818 0 0112 2.182c5.42 0 9.818 4.398 9.818 9.818 0 5.421-4.398 9.818-9.818 9.818z"/></svg>
+    Chat WhatsApp Sekarang — Gratis
+  </a>
+  <div class="reassure-row">
+    <div class="rr"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>Garansi revisi 30 hari</div>
+    <div class="rr"><svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>Live dalam 3–5 hari</div>
+    <div class="rr"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"/></svg>Konsultasi pertama gratis</div>
+    <div class="rr"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"/></svg>30+ bisnis sudah pakai</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="logo">Reply<em>AI</em></div>
+  <p>© 2025 ReplyAI · Powered by n8n, WAHA & Google Gemini · Made in Indonesia 🇮🇩</p>
+</footer>
+
+<!-- FLOAT WA -->
+<a href="https://wa.me/628XXXXXXXXXX?text=Halo%2C%20saya%20tertarik%20dengan%20CS%20AI%20WhatsApp" class="float-wa" target="_blank">
+  <div class="float-pulse"></div>
+  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.122.552 4.112 1.516 5.842L0 24l6.335-1.652A11.954 11.954 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 01-5.002-1.366l-.358-.214-3.76.98.999-3.645-.234-.374A9.818 9.818 0 0112 2.182c5.42 0 9.818 4.398 9.818 9.818 0 5.421-4.398 9.818-9.818 9.818z"/></svg>
+  <span>Hubungi Kami</span>
+</a>
+
+<script>
+// Reveal on scroll
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) setTimeout(() => e.target.classList.add('visible'), i * 60);
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+// FAQ
+document.querySelectorAll('.faq-q').forEach(q => {
+  q.addEventListener('click', () => {
+    const item = q.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  });
+});
+
+// Simulate typing loop in chat
+const typingEl = document.querySelector('.typing-indicator');
+if (typingEl) {
+  setInterval(() => {
+    typingEl.style.opacity = '1';
+    setTimeout(() => { typingEl.style.opacity = '0'; }, 1500);
+  }, 4000);
+}
+</script>
+</body>
+</html>
